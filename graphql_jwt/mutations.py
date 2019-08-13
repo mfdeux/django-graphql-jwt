@@ -9,9 +9,9 @@ from .utils import get_payload
 
 __all__ = [
     'JSONWebTokenMutation',
-    'ObtainJSONWebToken',
-    'Verify',
-    'Refresh',
+    'ObtainToken',
+    'VerifyToken',
+    'RefreshToken',
     'Revoke',
 ]
 
@@ -36,11 +36,11 @@ class JSONWebTokenMutation(mixins.ObtainJSONWebTokenMixin,
         return cls.resolve(root, info, **kwargs)
 
 
-class ObtainJSONWebToken(mixins.ResolveMixin, JSONWebTokenMutation):
+class ObtainToken(mixins.ResolveMixin, JSONWebTokenMutation):
     """Obtain JSON Web Token mutation"""
 
 
-class Verify(mixins.VerifyMixin, graphene.Mutation):
+class VerifyToken(mixins.VerifyMixin, graphene.Mutation):
 
     class Arguments:
         token = graphene.String(required=True)
@@ -50,7 +50,7 @@ class Verify(mixins.VerifyMixin, graphene.Mutation):
         return cls(payload=get_payload(token, info.context))
 
 
-class Refresh(mixins.RefreshMixin, graphene.Mutation):
+class RefreshToken(mixins.RefreshMixin, graphene.Mutation):
 
     class Arguments(mixins.RefreshMixin.Fields):
         """Refresh Arguments"""
