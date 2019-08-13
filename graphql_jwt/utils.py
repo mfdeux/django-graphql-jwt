@@ -33,10 +33,13 @@ def jwt_payload(user, context=None):
 
 
 def jwt_encode(payload, context=None):
+    print(payload)
+    print(jwt_settings.ALGORITHM)
+
     return jwt.encode(
-        payload,
-        jwt_settings.SIGNING_KEY,
-        jwt_settings.ALGORITHM,
+        payload=payload,
+        key=jwt_settings.SIGNING_KEY,
+        algorithm=jwt_settings.ALGORITHM,
     ).decode('utf-8')
 
 
@@ -46,9 +49,10 @@ def jwt_decode(token, context=None):
     else:
         verifying_key = jwt_settings.VERIFYING_KEY
 
+    print(jwt_settings.ALGORITHM)
     return jwt.decode(
-        token,
-        verifying_key,
+        jwt=token,
+        key=verifying_key,
         algorithms=[jwt_settings.ALGORITHM], verify=jwt_settings.JWT_VERIFY)
 
 
