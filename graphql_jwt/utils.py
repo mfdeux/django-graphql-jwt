@@ -27,6 +27,8 @@ def jwt_payload(user, context=None):
     if jwt_settings.JWT_ISSUER is not None:
         payload['iss'] = jwt_settings.JWT_ISSUER
 
+    print(payload)
+
     return payload
 
 
@@ -82,7 +84,8 @@ def get_payload(token, context=None):
         raise exceptions.JSONWebTokenExpired()
     except jwt.DecodeError:
         raise exceptions.JSONWebTokenError(_('Error decoding signature'))
-    except jwt.InvalidTokenError:
+    except jwt.InvalidTokenError as error:
+        print(error)
         raise exceptions.JSONWebTokenError(_('Invalid token'))
     return payload
 
