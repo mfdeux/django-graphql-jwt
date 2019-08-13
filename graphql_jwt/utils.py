@@ -39,17 +39,15 @@ def jwt_encode(payload, context=None):
 
 
 def jwt_decode(token, context=None):
+    if jwt_settings.ALGORITHM.startswith('HS'):
+        verifying_key = jwt_settings.SIGNING_KEY
+    else:
+        verifying_key = jwt_settings.VERIFYING_KEY
+
     return jwt.decode(
         token,
-        jwt_settings.VERIFYING_KEY or jwt_settings.SIGNING_KEY,
-        jwt_settings.JWT_VERIFY,
-        options={
-            'verify_exp': jwt_settings.JWT_VERIFY_EXPIRATION,
-        },
-        leeway=jwt_settings.JWT_LEEWAY,
-        audience=jwt_settings.JWT_AUDIENCE,
-        issuer=jwt_settings.JWT_ISSUER,
-        algorithms=[jwt_settings.ALGORITHM])
+        verifying_key,
+        algorithms=[jwt_settings.ALGORITHM], verify=jwt_settings.JWT_VERIFY)
 
 
 def get_http_authorization(request):
