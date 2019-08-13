@@ -27,15 +27,10 @@ def jwt_payload(user, context=None):
     if jwt_settings.JWT_ISSUER is not None:
         payload['iss'] = jwt_settings.JWT_ISSUER
 
-    print(payload)
-
     return payload
 
 
 def jwt_encode(payload, context=None):
-    print(payload)
-    print(jwt_settings.ALGORITHM)
-
     return jwt.encode(
         payload=payload,
         key=jwt_settings.SIGNING_KEY,
@@ -49,7 +44,6 @@ def jwt_decode(token, context=None):
     else:
         verifying_key = jwt_settings.VERIFYING_KEY
 
-    print(jwt_settings.ALGORITHM)
     return jwt.decode(
         jwt=token,
         key=verifying_key,
@@ -89,7 +83,6 @@ def get_payload(token, context=None):
     except jwt.DecodeError:
         raise exceptions.JSONWebTokenError(_('Error decoding signature'))
     except jwt.InvalidTokenError as error:
-        print(error)
         raise exceptions.JSONWebTokenError(_('Invalid token'))
     return payload
 
@@ -97,7 +90,7 @@ def get_payload(token, context=None):
 def get_user_by_natural_key(user_id):
     User = get_user_model()
     try:
-        return User.objects.get(**{jwt_settings.USER_ID_CLAIM: user_id})
+        return User.objects.get(**{jwt_settings.USER_ID_FIELD: user_id})
     except User.DoesNotExist:
         return None
 
