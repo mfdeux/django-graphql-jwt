@@ -11,13 +11,10 @@ from .settings import jwt_settings
 
 
 def jwt_payload(user, context=None):
-    username = user.get_username()
-
-    if hasattr(username, 'pk'):
-        username = username.pk
+    user_id = getattr(user, jwt_settings.USER_ID_FIELD)
 
     payload = {
-        user.USERNAME_FIELD: username,
+        jwt_settings.USER_ID_CLAIM: user_id,
         'exp': datetime.utcnow() + jwt_settings.JWT_EXPIRATION_DELTA,
     }
 
@@ -36,15 +33,15 @@ def jwt_payload(user, context=None):
 def jwt_encode(payload, context=None):
     return jwt.encode(
         payload,
-        jwt_settings.JWT_SECRET_KEY,
-        jwt_settings.JWT_ALGORITHM,
+        jwt_settings.SIGNING_KEY,
+        jwt_settings.ALGORITHM,
     ).decode('utf-8')
 
 
 def jwt_decode(token, context=None):
     return jwt.decode(
         token,
-        jwt_settings.JWT_SECRET_KEY,
+        jwt_settings.VERIFYING_KEY or jwt_settings.SIGNING_KEY,
         jwt_settings.JWT_VERIFY,
         options={
             'verify_exp': jwt_settings.JWT_VERIFY_EXPIRATION,
@@ -52,7 +49,7 @@ def jwt_decode(token, context=None):
         leeway=jwt_settings.JWT_LEEWAY,
         audience=jwt_settings.JWT_AUDIENCE,
         issuer=jwt_settings.JWT_ISSUER,
-        algorithms=[jwt_settings.JWT_ALGORITHM])
+        algorithms=[jwt_settings.ALGORITHM])
 
 
 def get_http_authorization(request):
@@ -92,21 +89,21 @@ def get_payload(token, context=None):
     return payload
 
 
-def get_user_by_natural_key(username):
+def get_user_by_natural_key(user_id):
     User = get_user_model()
     try:
-        return User.objects.get_by_natural_key(username)
+        return User.objects.get(**{jwt_settings.USER_ID_CLAIM: user_id})
     except User.DoesNotExist:
         return None
 
 
 def get_user_by_payload(payload):
-    username = jwt_settings.JWT_PAYLOAD_GET_USERNAME_HANDLER(payload)
+    user_id = payload.get(jwt_settings.USER_ID_CLAIM)
 
-    if not username:
+    if not user_id:
         raise exceptions.JSONWebTokenError(_('Invalid payload'))
 
-    user = jwt_settings.JWT_GET_USER_BY_NATURAL_KEY_HANDLER(username)
+    user = jwt_settings.JWT_GET_USER_BY_NATURAL_KEY_HANDLER(user_id)
 
     if user is not None and not user.is_active:
         raise exceptions.JSONWebTokenError(_('User is disabled'))

@@ -15,7 +15,7 @@ Here's a **list of settings** available in *django-graphql-jwt* and their defaul
 PyJWT
 -----
 
-`JWT_ALGORITHM`_
+`ALGORITHM`_
 ~~~~~~~~~~~~~~~~
 
   Algorithm for cryptographic signing
@@ -47,7 +47,7 @@ PyJWT
   Default: ``timedelta(seconds=0)``
 
 
-`JWT_SECRET_KEY`_
+`SIGNING_KEY`_
 ~~~~~~~~~~~~~~~~~
 
   The secret key used to sign the JWT

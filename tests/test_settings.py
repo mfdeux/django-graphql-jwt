@@ -19,7 +19,7 @@ class SettingsTests(TestCase):
             settings.import_from_string('import.error', '')
 
     def test_reload_settings(self):
-        getattr(settings.jwt_settings, 'JWT_ALGORITHM')
+        getattr(settings.jwt_settings, 'ALGORITHM')
         settings.reload_settings(setting='TEST')
 
         self.assertTrue(settings.jwt_settings._cached_attrs)

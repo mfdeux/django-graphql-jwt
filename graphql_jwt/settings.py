@@ -7,11 +7,12 @@ from django.test.signals import setting_changed
 from django.utils import six
 
 DEFAULTS = {
-    'JWT_ALGORITHM': 'HS256',
+    'ALGORITHM': 'HS256',
     'JWT_AUDIENCE': None,
     'JWT_ISSUER': None,
     'JWT_LEEWAY': 0,
-    'JWT_SECRET_KEY': settings.SECRET_KEY,
+    'SIGNING_KEY': settings.SECRET_KEY,
+    'VERIFYING_KEY': None,
     'JWT_VERIFY': True,
     'JWT_VERIFY_EXPIRATION': False,
     'JWT_EXPIRATION_DELTA': timedelta(seconds=60 * 5),
@@ -31,14 +32,17 @@ DEFAULTS = {
         lambda payload: payload.get(get_user_model().USERNAME_FIELD)
     ),
     'JWT_GET_USER_BY_NATURAL_KEY_HANDLER':
-    'graphql_jwt.utils.get_user_by_natural_key',
+        'graphql_jwt.utils.get_user_by_natural_key',
     'JWT_REFRESH_EXPIRED_HANDLER': 'graphql_jwt.utils.refresh_has_expired',
     'JWT_GET_REFRESH_TOKEN_HANDLER':
-    'graphql_jwt.refresh_token.utils.get_refresh_token_by_model',
+        'graphql_jwt.refresh_token.utils.get_refresh_token_by_model',
     'JWT_ALLOW_ANY_HANDLER': 'graphql_jwt.middleware.allow_any',
     'JWT_ALLOW_ANY_CLASSES': (),
     'JWT_COOKIE_NAME': 'JWT',
     'JWT_COOKIE_SECURE': False,
+
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id'
 }
 
 IMPORT_STRINGS = (
