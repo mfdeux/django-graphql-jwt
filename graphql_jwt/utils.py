@@ -3,6 +3,7 @@ from datetime import datetime
 
 from django.contrib.auth import get_user_model
 from django.utils.translation import ugettext as _
+from django.core.serializers.json import DjangoJSONEncoder
 
 import jwt
 
@@ -35,6 +36,7 @@ def jwt_encode(payload, context=None):
         payload=payload,
         key=jwt_settings.SIGNING_KEY,
         algorithm=jwt_settings.ALGORITHM,
+        json_encoder=DjangoJSONEncoder
     ).decode('utf-8')
 
 
