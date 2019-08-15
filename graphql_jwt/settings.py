@@ -42,7 +42,9 @@ DEFAULTS = {
     'JWT_COOKIE_SECURE': False,
 
     'USER_ID_FIELD': 'id',
-    'USER_ID_CLAIM': 'user_id'
+    'USER_ID_CLAIM': 'user_id',
+    'ORGANIZATION_ID_FIELD': 'id',
+    'ORGANIZATION_ID_CLAIM': 'organization_id',
 }
 
 IMPORT_STRINGS = (

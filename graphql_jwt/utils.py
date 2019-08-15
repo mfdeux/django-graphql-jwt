@@ -4,6 +4,7 @@ from datetime import datetime
 from django.contrib.auth import get_user_model
 from django.utils.translation import ugettext as _
 from django.core.serializers.json import DjangoJSONEncoder
+from django.core.exceptions import ObjectDoesNotExist
 
 import jwt
 
@@ -11,11 +12,13 @@ from . import exceptions
 from .settings import jwt_settings
 
 
-def jwt_payload(user, context=None):
+def jwt_payload(user, organization, context=None):
     user_id = getattr(user, jwt_settings.USER_ID_FIELD)
+    organization_id = getattr(organization, jwt_settings.ORGANIZATION_ID_FIELD)
 
     payload = {
         jwt_settings.USER_ID_CLAIM: user_id,
+        jwt_settings.ORGANIZATION_ID_CLAIM: organization_id,
         'exp': datetime.utcnow() + jwt_settings.JWT_EXPIRATION_DELTA,
     }
 
@@ -97,20 +100,38 @@ def get_user_by_natural_key(user_id):
         return None
 
 
-def get_user_by_payload(payload):
+def get_organization_by_natural_key(user, organization_id):
+    try:
+        membership = user.organization_memberships.get(**{jwt_settings.ORGANIZATION_ID_CLAIM: organization_id})
+        return membership.organization
+    except ObjectDoesNotExist:
+        return None
+
+
+def get_user_and_org_by_payload(payload):
     user_id = payload.get(jwt_settings.USER_ID_CLAIM)
+    organization_id = payload.get(jwt_settings.ORGANIZATION_ID_CLAIM)
 
     if not user_id:
+        raise exceptions.JSONWebTokenError(_('Invalid payload'))
+
+    if not organization_id:
         raise exceptions.JSONWebTokenError(_('Invalid payload'))
 
     user = jwt_settings.JWT_GET_USER_BY_NATURAL_KEY_HANDLER(user_id)
 
     if user is not None and not user.is_active:
         raise exceptions.JSONWebTokenError(_('User is disabled'))
-    return user
+
+    organization = jwt_settings.JWT_GET_ORGANIZATION_BY_NATURAL_KEY_HANDLER(user, organization_id)
+
+    if not organization:
+        raise exceptions.JSONWebTokenError(_('Organization is disabled'))
+
+    return user, organization
 
 
 def refresh_has_expired(orig_iat, context=None):
     return timegm(datetime.utcnow().utctimetuple()) > (
-        orig_iat + jwt_settings.JWT_REFRESH_EXPIRATION_DELTA.total_seconds()
+            orig_iat + jwt_settings.JWT_REFRESH_EXPIRATION_DELTA.total_seconds()
     )

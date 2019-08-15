@@ -7,7 +7,7 @@ from . import exceptions, signals
 from .decorators import setup_jwt_cookie
 from .refresh_token.mixins import RefreshTokenMixin
 from .settings import jwt_settings
-from .utils import get_payload, get_user_by_payload
+from .utils import get_payload, get_user_and_org_by_payload
 
 
 class JSONWebTokenMixin(object):
@@ -54,7 +54,7 @@ class KeepAliveRefreshMixin(object):
     def refresh(cls, root, info, token, **kwargs):
         context = info.context
         payload = get_payload(token, context)
-        user = get_user_by_payload(payload)
+        user, organization = get_user_and_org_by_payload(payload)
         orig_iat = payload.get('origIat')
 
         if not orig_iat:
@@ -63,11 +63,11 @@ class KeepAliveRefreshMixin(object):
         if jwt_settings.JWT_REFRESH_EXPIRED_HANDLER(orig_iat, context):
             raise exceptions.JSONWebTokenError(_('Refresh has expired'))
 
-        payload = jwt_settings.JWT_PAYLOAD_HANDLER(user, context)
+        payload = jwt_settings.JWT_PAYLOAD_HANDLER(user, organization, context)
         payload['origIat'] = orig_iat
 
         token = jwt_settings.JWT_ENCODE_HANDLER(payload, context)
-        signals.token_refreshed.send(sender=cls, request=context, user=user)
+        signals.token_refreshed.send(sender=cls, request=context, user=user, organization=organization)
         return cls(token=token, payload=payload)
 
 

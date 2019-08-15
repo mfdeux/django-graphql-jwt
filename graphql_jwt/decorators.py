@@ -12,6 +12,7 @@ from . import exceptions, signals
 from .refresh_token.shortcuts import refresh_token_lazy
 from .settings import jwt_settings
 from .shortcuts import get_token
+from django.core.exceptions import ObjectDoesNotExist
 
 __all__ = [
     'user_passes_test',
@@ -71,8 +72,8 @@ def token_auth(f):
         context._jwt_token_auth = True
 
         def on_resolve(values):
-            user, payload = values
-            payload.token = get_token(user, context)
+            user, organization, payload = values
+            payload.token = get_token(user, organization, context)
 
             if jwt_settings.JWT_LONG_RUNNING_REFRESH_TOKEN:
                 payload.refresh_token = refresh_token_lazy(user)
@@ -80,6 +81,7 @@ def token_auth(f):
             return payload
 
         username = kwargs.get(get_user_model().USERNAME_FIELD)
+        organization_id = kwargs.get('organization')
 
         user = authenticate(
             request=context,
@@ -93,10 +95,19 @@ def token_auth(f):
         if hasattr(context, 'user'):
             context.user = user
 
-        result = f(cls, root, info, **kwargs)
-        values = (user, result)
+        try:
+            membership = user.organization_memberships.get(**{jwt_settings.ORGANIZATION_ID_CLAIM: organization_id})
+            organization = membership.organization
+        except ObjectDoesNotExist:
+            raise exceptions.JSONWebTokenError(
+                _('Please, enter valid organization'))
 
-        signals.token_issued.send(sender=cls, request=context, user=user)
+        context.organization = organization
+
+        result = f(cls, root, info, **kwargs)
+        values = (user, organization, result)
+
+        signals.token_issued.send(sender=cls, request=context, user=user, organization=organization)
 
         if is_thenable(result):
             return Promise.resolve(values).then(on_resolve)

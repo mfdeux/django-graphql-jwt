@@ -27,6 +27,7 @@ class JSONWebTokenMutation(mixins.ObtainJSONWebTokenMixin,
         cls._meta.arguments.update({
             get_user_model().USERNAME_FIELD: graphene.String(required=True),
             'password': graphene.String(required=True),
+            'organization': graphene.String(required=True)
         })
         return super(JSONWebTokenMutation, cls).Field(*args, **kwargs)
 
