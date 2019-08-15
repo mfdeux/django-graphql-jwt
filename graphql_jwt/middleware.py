@@ -112,9 +112,6 @@ class JSONWebTokenMiddleware(DjangoMiddleware):
         if ((_authenticate(context) or token_argument is not None) and
                 self.authenticate_context(info, **kwargs)):
 
-            print(context)
-            print(kwargs)
-
             user = authenticate(request=context, **kwargs)
 
             if user is not None:
