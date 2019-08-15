@@ -11,7 +11,9 @@ class JSONWebTokenBackend(object):
         token = get_credentials(request, **kwargs)
 
         if token is not None:
-            return get_user_and_org_by_token(token, request)
+            user, organization = get_user_and_org_by_token(token, request)
+            request.organization = organization
+            return user
 
         return None
 
