@@ -33,7 +33,7 @@ DEFAULTS = {
     ),
     'JWT_GET_USER_BY_NATURAL_KEY_HANDLER':
         'graphql_jwt.utils.get_user_by_natural_key',
-    'JWT_GET_ORGANIZATION BY_NATURAL_KEY_HANDLER':
+    'JWT_GET_ORGANIZATION_BY_NATURAL_KEY_HANDLER':
         'graphql_jwt.utils.get_organization_by_natural_key',
     'JWT_REFRESH_EXPIRED_HANDLER': 'graphql_jwt.utils.refresh_has_expired',
     'JWT_GET_REFRESH_TOKEN_HANDLER':
